@@ -11,8 +11,32 @@ extern crate serde_json;
 
 use rocket_contrib::{Json};
 
+// X-GitHub-Event
+
+use rocket::Outcome;
+use rocket::http::Status;
+use rocket::request::{self, Request, FromRequest};
+
+struct Event(String);
+
+impl<'a, 'r> FromRequest<'a, 'r> for Event {
+    type Error = ();
+
+    fn from_request(request: &'a Request<'r>) -> request::Outcome<Event, ()> {
+        let keys: Vec<_> = request.headers().get("X-GitHub-Event").collect();
+        if keys.len() != 1 {
+            return Outcome::Failure((Status::BadRequest, ()));
+        }
+
+        let key = keys[0];
+
+        return Outcome::Success(Event(key.to_string()));
+    }
+}
+
 #[post("/github", format = "application/json", data = "<message>")]
-fn hello(message: Json<serde_json::Value>) -> String {
+fn hello(event: Event, message: Json<serde_json::Value>) -> String {
+    println!("EVENT: {}", event.0);
     println!("{:#?}", message);
     "butts".into()
 }
