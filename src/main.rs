@@ -3,13 +3,22 @@
 
 extern crate rocket;
 
-#[get("/<name>/<age>")]
-fn hello(name: String, age: u8) -> String {
-    format!("Hello, {} year old named {}!", age, name)
+#[macro_use] extern crate serde_derive;
+#[macro_use] extern crate rocket_contrib;
+
+extern crate serde;
+extern crate serde_json;
+
+use rocket_contrib::{Json};
+
+#[post("/github", format = "application/json", data = "<message>")]
+fn hello(message: Json<serde_json::Value>) -> String {
+    println!("{:#?}", message);
+    "butts".into()
 }
 
 fn main() {
-    rocket::ignite().mount("/hello", routes![hello]).launch();
+    rocket::ignite().mount("/", routes![hello]).launch();
 }
 
 
