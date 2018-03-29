@@ -5,6 +5,7 @@ extern crate rocket;
 
 #[macro_use] extern crate serde_derive;
 #[macro_use] extern crate rocket_contrib;
+#[macro_use] extern crate error_chain;
 
 extern crate serde;
 extern crate serde_json;
@@ -18,6 +19,10 @@ use rocket::http::Status;
 use rocket::request::{self, Request, FromRequest};
 
 struct Event(String);
+
+mod events;
+mod errors;
+use errors::*;
 
 impl<'a, 'r> FromRequest<'a, 'r> for Event {
     type Error = ();
@@ -35,10 +40,22 @@ impl<'a, 'r> FromRequest<'a, 'r> for Event {
 }
 
 #[post("/github", format = "application/json", data = "<message>")]
-fn hello(event: Event, message: Json<serde_json::Value>) -> String {
-    println!("EVENT: {}", event.0);
-    println!("{:#?}", message);
-    "butts".into()
+fn hello(event: Event, message: Json<serde_json::Value>) -> Result<String> {
+    match event.0.as_ref() {
+        "issue_comment" => {
+            let y: serde_json::Value = (*message).clone();
+            let x = serde_json::from_value::<events::github::IssueComment>(y).chain_err(|| "Failed to parse issue_comment")?;
+            println!("{:#?}", x)
+        }
+        "push" => {
+            let y: serde_json::Value = (*message).clone();
+            let x = serde_json::from_value::<events::github::Push>(y).chain_err(|| "Failed to parse push")?;
+            println!("{:#?}", x)
+        }
+        _ => {}
+    };
+
+    Ok("butts".into())
 }
 
 fn main() {
@@ -53,3 +70,5 @@ fn main() {
 //   * gitlab repo url
 //   * Secret
 // * Need a guide with setup steps for github + gitlab
+// * on push: sync to gitlab
+// * on issue_comment: check for `glhf run <job>`
