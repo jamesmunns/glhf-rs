@@ -1,4 +1,21 @@
-// https://developer.github.com/v3/activity/events/types/
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Push {
+  #[serde(rename="ref")]
+  push_ref: String, // SHA?
+  before: String, // SHA?
+  after: String, // SHA?
+  created: bool,
+  deleted: bool,
+  forced: bool,
+  base_ref: Option<String>,
+  compare: String, // URL?
+  commits: Vec<Commit>,
+  head_commit: Commit,
+  repository: Repository,
+  pusher: GitUser,
+  sender: DetailedGitHubUser,
+}
+
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GitHubUser {
@@ -29,7 +46,10 @@ pub struct Repository {
     repository_id: u64,
     name: String,
     full_name: String,
+
+    // AJM(TODO): Sometimes this is a GitUser, sometimes a DetailedGitUser
     owner: GitUser,
+
     private: bool,
     html_url: String, // URL
     description: String,
@@ -70,9 +90,17 @@ pub struct Repository {
     notifications_url: String, // URL
     labels_url: String, // URL
     releases_url: String, // URL
-    created_at: u64, // Unix Timestamp?
+
+    // TODO(AJM): This is sometimes a unix timestamp, and sometimes
+    // a 8601 date. Ignore for now.
+    created_at: String, // Date Time
+
     updated_at: String, // Date Time
+
+    // TODO(AJM): This is sometimes a unix timestamp, and sometimes
+    // a 8601 date. Ignore for now.
     pushed_at: u64, // Unix Timestamp?
+
     git_url: String, // git@URL
     ssh_url: String, // ssh@URL
     clone_url: String, // URL
@@ -93,7 +121,7 @@ pub struct Repository {
     open_issues: u64,
     watchers: u64,
     default_branch: String, // branch
-    stargazers: u64,
+    stargazers: Option<u64>,
     master_branch: String, // branch
 }
 
@@ -126,73 +154,3 @@ pub struct GitUser {
     email: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Push {
-  #[serde(rename="ref")]
-  push_ref: String, // SHA?
-  before: String, // SHA?
-  after: String, // SHA?
-  created: bool,
-  deleted: bool,
-  forced: bool,
-  base_ref: Option<String>,
-  compare: String, // URL?
-  commits: Vec<Commit>,
-  head_commit: Commit,
-  repository: Repository,
-  pusher: GitUser,
-  sender: DetailedGitHubUser,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Label {
-    url: String,
-    name: String,
-    color: String, // Color Hex
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Issue {
-    url: String, // URL
-    labels_url: String, // URL
-    comments_url: String, // URL
-    events_url: String, // URL
-    html_url: String, // URL
-    #[serde(rename="id")]
-    issue_id: u64,
-    number: u64,
-    title: String,
-    user: DetailedGitHubUser,
-    labels: Vec<Label>,
-    state: String,
-    locked: bool,
-    assignee: Option<String>,
-    milestone: Option<String>,
-    comments: u64,
-    created_at: String, // Date Time
-    updated_at: String, // Date Time
-    closed_at: Option<String>, // Date Time
-    body: String
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Comment {
-    url: String, // URL
-    html_url: String, // URL
-    issue_url: String, // URL
-    #[serde(rename="id")]
-    comment_id: u64,
-    user: DetailedGitHubUser,
-    created_at: String, // Date Time
-    updated_at: String, // Date Time
-    body: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct IssueComment {
-  action: String,
-  issue: Issue,
-  comment: Comment,
-  repository: Repository,
-  sender: DetailedGitHubUser
-}

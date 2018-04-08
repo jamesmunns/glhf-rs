@@ -1,0 +1,9 @@
+[development]
+address = "0.0.0.0"
+port = 38080
+workers = 4
+log = "normal"
+
+[global.limits]
+forms = 32768
+json = 5242880

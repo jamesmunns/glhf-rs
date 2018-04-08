@@ -41,15 +41,12 @@ impl<'a, 'r> FromRequest<'a, 'r> for Event {
 
 #[post("/github", format = "application/json", data = "<message>")]
 fn hello(event: Event, message: Json<serde_json::Value>) -> Result<String> {
+    println!("{:#?}", message.0);
     match event.0.as_ref() {
-        "issue_comment" => {
-            let y: serde_json::Value = (*message).clone();
-            let x = serde_json::from_value::<events::github::IssueComment>(y).chain_err(|| "Failed to parse issue_comment")?;
-            println!("{:#?}", x)
-        }
         "push" => {
+            use events::github::push::Push;
             let y: serde_json::Value = (*message).clone();
-            let x = serde_json::from_value::<events::github::Push>(y).chain_err(|| "Failed to parse push")?;
+            let x = serde_json::from_value::<Push>(y).chain_err(|| "Failed to parse push")?;
             println!("{:#?}", x)
         }
         _ => {}
