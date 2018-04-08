@@ -2,3 +2,8 @@
 
 pub mod push;
 pub mod issue_comment;
+
+#[derive(Debug, Clone)]
+pub enum GitHubEvent {
+    Push(push::Push)
+}
